@@ -32,17 +32,17 @@ I use coffee-script, so examples are coffee-script
 
 
 The following events are emitted (descriptions below):
-*'data' (eventinfo)
-*'impulse' (eventinfo)
-*'impulse-reading' (eventinfo)
-*'impulse-avg' (eventinfo)
+* 'data' (eventinfo)
+* 'impulse' (eventinfo)
+* 'impulse-reading' (eventinfo)
+* 'impulse-avg' (eventinfo)
 
 The following events are planned:
-*'history' (eventinfo)
+* 'history' (eventinfo)
 
 
 
-##data
+###data###
 This is emitted every time a normal sensor reading is generated, sensors are 0-9 with 0 being while house 
 and 9 normally being a 'data' channel. If a 'data' channel is detected, it is actually generated as a set of
 'impulse' events as thay carry additional information. 
