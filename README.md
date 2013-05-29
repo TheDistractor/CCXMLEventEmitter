@@ -1,12 +1,15 @@
 #CC128EventEmitter
 =================
 
-Connects the CurrentCost [basestation] (CC128) XML output with node.js EventEmitter.
+Connects the CurrentCost (EnvIR) basestation (CC128) XML output with node.js EventEmitter.
 
 I wanted to be able to deal with my EnvIR basestation XML output within node, but 
-using node's EventEmitter rather than having to deal with the XML directly. 
-There are a few node/currentcost implementations out there, but they did not seem so simple
-to interface with as I envisage. I'll list some I looked at below as they may be a better fit for others.
+using node's EventEmitter rather than having to deal with the XML directly. As the EnvIR mostly conforms 
+to the CC128 specification, this should work with other devices, so if you use this on another device successfully
+please drop be a line with the device name/type and if possible the 'src' property from the 'base' message.
+
+There are a few node/currentcost implementations out there, but they did not seem as simple
+to interface with as I had envisaged. I'll list some I looked at below as they may be a better fit for others.
 
 This module is initialised with a 'device' parameter representing the serial port 
 your currentcost basestation is connected to.
@@ -23,7 +26,7 @@ I use coffee-script, so examples are coffee-script
     envir = new ccSvc.basestation '/dev/ttyUSB3', options  #or whatever your usb device is.
 
     #you can this listen to those events you want
-    envir.on 'data' (einfo) ->
+    envir.on 'data', (einfo) ->
       einfo.sensor == 0 then console.log "whole house using:#{einfo.watts} watts" 
 
 
