@@ -32,7 +32,8 @@ I use coffee-script, so examples are coffee-script
 
 
 The following events are emitted (descriptions below):
-* 'data' (eventinfo)
+* 'base' (eventinfo)
+* 'sensor' (eventinfo)
 * 'impulse' (eventinfo)
 * 'impulse-reading' (eventinfo)
 * 'impulse-avg' (eventinfo)
@@ -41,14 +42,36 @@ The following events are planned:
 * 'history' (eventinfo)
 
 
+###base###
+'base' events are generated every {baseEventRepeatEvery} seconds (default = 60). They contain information relating
+to the basestation itself. Internally these messages are generated very frequently but they contain very little useful 
+information except perhaps temperature of the base station itself, and are hence reported every 60 seconds by 
+default. This can be changed by the {baseEventRepeatEvery} parameter.
 
-###data###
+
+###sensor###
 This is emitted every time a normal sensor reading is generated, sensors are 0-9 with 0 being while house 
 and 9 normally being a 'data' channel. If a 'data' channel is detected, it is actually generated as a set of
-'impulse' events as thay carry additional information. 
+'impulse' events as they carry additional information. 
 
 parameters: eventinfo
               
+
+###impulse### 
+This event is emitted everytime a 'data' channel is encountered. So if you have configured one of your EnvIR 
+channels as a 'data' channel it will be reported as 'impulse*' rather than 'sensor', as impulse events have 
+additional information.
+
+###impulse-reading###
+This event represents the 'reading' that would be present on your meter dials if you initialised the class with your 
+current meter reading. It should track your meter within a reasonable margin of error. These events seem to be 
+generated less often that 'sensor' events, approx every 27.5 seconds on my unit.
+
+###impulse-avg###
+This event represents the average consumption of (elec/gas/water) during the reporting periods. As the period is 
+less often than 'sensor' events it may not seem to 'follow' your use pattern, but as it is based on 'pulses' it should 
+be more accurate than those reported by 'sensor' events for overall consumption reporting.
+
 
 
 
