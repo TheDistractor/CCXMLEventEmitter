@@ -33,14 +33,14 @@ I use coffee-script, so examples are coffee-script
 
 
 The following events are emitted (descriptions below):
-* 'base', (eventinfo)
-* 'sensor', (eventinfo)
-* 'impulse', (eventinfo)
-* 'impulse-reading', (eventinfo)
-* 'impulse-avg', (eventinfo)
+* 'base', (baseinfo)
+* 'sensor', (sensorinfo)
+* 'impulse', (impulseinfo)
+* 'impulse-reading', (impulsereadinginfo)
+* 'impulse-avg', (impulseavginfo)
 
 The following events are planned:
-* 'history', (eventinfo)
+* 'history', (historyinfo)
 
 
 ###base###
