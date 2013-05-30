@@ -31,6 +31,7 @@ I use coffee-script, so examples are coffee-script
       console.log "whole house using:#{eventinfo.watts} watts" if eventinfo.sensor == 0   
 
 
+*See the examples folder for more information*
 
 The following events are emitted (descriptions below):
 * 'base', (baseinfo)
