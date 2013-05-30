@@ -86,4 +86,4 @@ parameters: impulseavginfo
 
 
 ##Additional implementations##
-Nothing added yet
+* https://github.com/robrighter/node-currentcost
