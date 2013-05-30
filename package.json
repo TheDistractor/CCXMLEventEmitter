@@ -1,0 +1,42 @@
+{ "name":           "ccxmleventemitter",
+  "version":        "0.9.0beta",
+  "description":    "CurrentCost Base Station XML NodeJS EventEmitter",
+  "homepage":       "https://github.com/TheDistractor/CCXMLEventEmitter",
+  "author":         "Andy Spencer <thedistractor@the-spencers.co.uk>",
+  "contributors": [
+    "Andy Spencer <thedistractor@the-spencers.co.uk>"
+  ],
+  "keywords": [
+    "currentcost", "xml", "eventemitter", "nodejs", "cc128", "envir"
+  ],
+  "main":           "lib/ccxmleventemitter",
+  "scripts": {
+    "build":        "coffee --bare --compile --lint --output lib src/*.coffee ; coffee --bare --compile --lint --output examples examples/*.coffee",
+    "prepublish":   "coffee --bare --compile --lint --output lib src/*.coffee",
+    "postpublish":  "rm -rf lib",
+    "test":         "./node_modules/.bin/mocha"
+  },
+  "engines": {
+    "node":         ">= 0.8.0"
+  },
+  "dependencies": {
+    "serialport":            "~1.1.0",
+    "sax":                  "~0.5.4"
+  },
+  "devDependencies": {
+    "coffee-script":          "~1.6.2",
+    "mocha": "~1.9.0"
+  },
+  "repository": {
+    "type":   "git",
+    "url":    "https://github.com/TheDistractor/CCXMLEventEmitter"
+  },
+  "bugs": {
+    "url":    "https://github.com/TheDistractor/CCXMLEventEmitter"
+  },
+  "licenses": [
+    { "type": "GPL",
+      "url":  "https://github.com/TheDistractor/CCXMLEventEmitter/blob/master/GPL3-LICENSE"
+    }
+  ]
+}
