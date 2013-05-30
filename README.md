@@ -61,7 +61,7 @@ and 9 normally being a 'data' channel. If a 'data' channel is detected, it is ac
 parameters: sensorinfo
               
 
-###impulse### 
+###impulse
 This event is emitted everytime a 'data' channel is encountered. So if you have configured one of your EnvIR 
 channels as a 'data' channel it will be reported as 'impulse' rather than 'sensor', as impulse events have 
 additional information.
