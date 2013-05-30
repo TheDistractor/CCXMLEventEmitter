@@ -12,7 +12,7 @@
   "main":           "lib/ccxmleventemitter",
   "scripts": {
     "build":        "coffee --bare --compile --lint --output lib src/*.coffee ; coffee --bare --compile --lint --output examples examples/*.coffee",
-    "prepublish":   "coffee --bare --compile --lint --output lib src/*.coffee",
+    "prepublish":   "coffee --bare --compile --lint --output lib src/*.coffee ; coffee --bare --compile --lint --output examples examples/*.coffee",
     "postpublish":  "rm -rf lib",
     "test":         "./node_modules/.bin/mocha"
   },
