@@ -7,7 +7,7 @@
     "Andy Spencer <thedistractor@the-spencers.co.uk>"
   ],
   "keywords": [
-    "currentcost", "xml", "eventemitter", "nodejs", "cc128", "envir"
+    "currentcost", "current cost", "xml", "eventemitter", "nodejs", "cc128", "envir"
   ],
   "main":           "lib/ccxmleventemitter",
   "scripts": {
