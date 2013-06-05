@@ -13,7 +13,7 @@
   "scripts": {
     "build":        "coffee --bare --compile --lint --output lib src/*.coffee ; coffee --bare --compile --lint --output examples examples/*.coffee",
     "prepublish":   "coffee --bare --compile --lint --output lib src/*.coffee ; coffee --bare --compile --lint --output examples examples/*.coffee",
-    "postpublish":  "rm -rf lib",
+    "postpublish":  "ls -al lib; ls -al examples",
     "test":         "./node_modules/.bin/mocha"
   },
   "engines": {
