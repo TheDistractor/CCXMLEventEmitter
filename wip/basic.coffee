@@ -18,7 +18,7 @@ connected to linux usb serial port /dev/ttyUSB0
 #we will initialise sensor '9' with a reading of 1000.000 (this could represent the reading on a meter dial)
 #we setup a spikeThreshold of 60 ipu's. If and imp sensor reports above this value we treat as spike and the module tries to flatten the reading and carry on recording
 
-envir = new ccSvc.CurrentCost128XMLBaseStation '/dev/ttyUSB0', {useOSTime : true, debug: false, emitBaseEvery: 30, reading : {'9':1000.000}, spikeThreshold:60 }
+envir = new ccSvc.CurrentCost128XMLBaseStation '/dev/ttyUSB1', {useOSTime : true, debug: true, emitBaseEvery: 30, reading : {'9':1000.000}, spikeThreshold:60 }
 
 
 envir.on 'base', (eventinfo) ->

@@ -1,10 +1,10 @@
 { "name":           "ccxmleventemitter",
-  "version":        "0.9.1beta",
+  "version":        "0.9.2beta",
   "description":    "CurrentCost Base Station XML NodeJS EventEmitter",
   "homepage":       "https://github.com/TheDistractor/CCXMLEventEmitter",
-  "author":         "Andy Spencer <thedistractor@the-spencers.co.uk>",
+  "author":         "Andy Spencer <lightbulb@laughlinez.com>",
   "contributors": [
-    "Andy Spencer <thedistractor@the-spencers.co.uk>"
+    "Andy Spencer <lightbulb@laughlinez.com>"
   ],
   "keywords": [
     "currentcost", "current cost", "xml", "eventemitter", "nodejs", "cc128", "envir"
@@ -17,7 +17,7 @@
     "test":         "./node_modules/.bin/mocha"
   },
   "engines": {
-    "node":         ">= 0.8.0"
+    "node":         ">= 0.10.10"
   },
   "dependencies": {
     "serialport":            "~1.1.0",

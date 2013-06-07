@@ -124,11 +124,14 @@ class CurrentCost128XMLBaseStation extends EventEmitter
     
     @parser = sax.createStream(false, {lowercasetags:true, trim:true})
 
+
     @parser.onerror = (e) ->
       console.error "error!", e if self.debug
       # clear the error
       @error = null
       @resume()
+
+
 
     @parser.ontext =  (t) ->
       # got some text.  t is the string of text.
@@ -377,12 +380,15 @@ class CurrentCost128XMLBaseStation extends EventEmitter
 
 
 
-
+    #console.log "I am here"
+    #this API only on node 0.10+
     @reader = new stream.Readable()
+
+
+
     @reader._read = (n) ->
       #no body
     @reader.pipe @parser #pipe all output we get into parse 
-
 
     console.log "creating:", @device if self.debug
 
