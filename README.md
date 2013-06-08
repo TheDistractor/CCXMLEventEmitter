@@ -1,11 +1,11 @@
 #CCXMLEventEmitter
 =================
 
-Changelog
-=========
+###Changelog
 
 2013-06-08 for 0.9.3beta - corrected 'impulse-reading'. added new impulse-spike, impulse-correction, impulse-warning events. updated package.json version deps.
 
+##Overview
 
 Connects the CurrentCost (EnvIR) basestation (CC128) XML output with node.js EventEmitter.
 
