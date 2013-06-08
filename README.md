@@ -48,11 +48,14 @@ The following events are emitted (descriptions below):
 * 'impulse-spike', (impulsespikeinfo)^
 * 'impulse-correction', (impulsecorrectioninfo)^
 * 'impulse-warning', (impulsewarninginfo)^ 
+
+nb: ^ = new for 0.9.3beta
+
+
 The following events are planned:
 * 'history', (historyinfo)
 
 
-nb: ^ = new for 0.9.3beta
 
 ###base###
 'base' events are generated every {emitBaseEvery} seconds (default = 60). They contain information relating
