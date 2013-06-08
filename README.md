@@ -4,6 +4,7 @@
 ###Changelog
 
 2013-06-08 for 0.9.3beta - corrected 'impulse-reading'. Added new impulse-spike, impulse-correction, impulse-warning events. updated package.json version deps.
+
 2013-06-08 for 0.9.4beta  - corrected history interleave problem. 
 
 ##Overview
