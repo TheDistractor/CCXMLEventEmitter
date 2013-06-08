@@ -1,6 +1,12 @@
 #CCXMLEventEmitter
 =================
 
+Changelog
+=========
+
+2013-06-08 for 0.9.3beta - corrected 'impulse-reading'. added new impulse-spike, impulse-correction, impulse-warning events. updated package.json version deps.
+
+
 Connects the CurrentCost (EnvIR) basestation (CC128) XML output with node.js EventEmitter.
 
 I wanted to be able to deal with my EnvIR basestation XML output within node, but 
@@ -39,10 +45,14 @@ The following events are emitted (descriptions below):
 * 'impulse', (impulseinfo)
 * 'impulse-reading', (impulsereadinginfo)
 * 'impulse-avg', (impulseavginfo)
-
+* 'impulse-spike', (impulsespikeinfo)^
+* 'impulse-correction', (impulsecorrectioninfo)^
+* 'impulse-warning', (impulsewarninginfo)^ 
 The following events are planned:
 * 'history', (historyinfo)
 
+
+nb: ^ = new for 0.9.3beta
 
 ###base###
 'base' events are generated every {emitBaseEvery} seconds (default = 60). They contain information relating
@@ -81,6 +91,26 @@ less often than 'sensor' events it may not seem to 'follow' your use pattern, bu
 be more accurate than those reported by 'sensor' events for overall consumption reporting.
 
 parameters: impulseavginfo
+
+###impulse-spike###
+Soetimes your impulse sensor (optismart etc) can produce 'false' impulses that I like to call 'spikes', this maybe due to
+other IR interference, an sensor movement due to environmental conditions, bright glare from sun etc etc.
+You can now use the option: spikeThreshold = ipu to setup 'spike' detection.
+e.g spikeThreshold = 60 would set anything above 60 ipu's per detection period to be treated as a spike, in which case a simple
+averaging algorithm is used to 'flatten' out the spike reading. A 'flattening' condition is known as a 'correction', in which case
+a further 'impulse-correction' event will be generated - see below.
+
+parameters: impulsespikeinfo
+
+###impulse-correction###
+Occurs when a 'spike' event has been 'flattened'.
+
+parameters: impulsecorrectioninfo
+
+###impulse-warning###
+Occurs when a 'flattening' condition could not be made.
+
+parameters: impulsewarninginfo
 
 
 

@@ -1,5 +1,5 @@
 { "name":           "ccxmleventemitter",
-  "version":        "0.9.2beta",
+  "version":        "0.9.3beta",
   "description":    "CurrentCost Base Station XML NodeJS EventEmitter",
   "homepage":       "https://github.com/TheDistractor/CCXMLEventEmitter",
   "author":         "Andy Spencer <lightbulb@laughlinez.com>",
@@ -11,8 +11,8 @@
   ],
   "main":           "lib/ccxmleventemitter",
   "scripts": {
-    "build":        "coffee --bare --compile --lint --output lib src/*.coffee ; coffee --bare --compile --lint --output examples examples/*.coffee",
-    "prepublish":   "coffee --bare --compile --lint --output lib src/*.coffee ; coffee --bare --compile --lint --output examples examples/*.coffee",
+    "build":        "coffee --bare --compile --output lib src/*.coffee ; coffee --bare --compile  --output examples examples/*.coffee",
+    "prepublish":   "coffee --bare --compile --output lib src/*.coffee ; coffee --bare --compile --output examples examples/*.coffee",
     "postpublish":  "ls -al lib; ls -al examples",
     "test":         "./node_modules/.bin/mocha"
   },

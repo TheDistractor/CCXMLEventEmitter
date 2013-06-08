@@ -3,7 +3,7 @@
 
 fs = require 'fs'
 ccSvc = require '../src/ccxmleventemitter'
-logfile = "log.txt"
+#logfile = "log.txt"
 
 ###
 scenario:
@@ -20,6 +20,8 @@ connected to linux usb serial port /dev/ttyUSB0
 
 envir = new ccSvc.CurrentCost128XMLBaseStation '/dev/ttyUSB0', {useOSTime : true, debug: false, emitBaseEvery: 30, reading : {'9':1000.000}, spikeThreshold:60 }
 
+
+console.log "Instance version: #{envir.version()}"
 
 envir.on 'base', (eventinfo) ->
   console.log "This base station is using #{eventinfo.src} firmware and has been running for #{eventinfo.dsb} days. The temperature is currently #{eventinfo.temp}"

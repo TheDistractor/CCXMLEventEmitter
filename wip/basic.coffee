@@ -20,6 +20,9 @@ connected to linux usb serial port /dev/ttyUSB0
 
 envir = new ccSvc.CurrentCost128XMLBaseStation '/dev/ttyUSB1', {useOSTime : true, debug: true, emitBaseEvery: 30, reading : {'9':1000.000}, spikeThreshold:60 }
 
+console.log "envir version #{envir.version()}"
+
+
 
 envir.on 'base', (eventinfo) ->
   console.log "This base station is using #{eventinfo.src} firmware and has been running for #{eventinfo.dsb} days. The temperature is currently #{eventinfo.temp}"
@@ -49,19 +52,19 @@ envir.on 'impulse-avg' , (eventinfo) ->
 envir.on 'impulse-spike', (eventinfo) ->
   data = "#{(new Date()).toLocaleTimeString()} Sensor #{eventinfo.sensor} Spiked with pulses of #{eventinfo.spike} units since last reported event"
   console.log data
-  fs.appendFileSync logfile, data if logfile?
+  fs.appendFileSync logfile, data+"\n\r" if logfile?
 
 #this tells us we have tried to apply a spike correction - readings should continue 'almost' normally.  
 envir.on 'impulse-correction', (eventinfo) ->
   data = "#{(new Date()).toLocaleTimeString()} Sensor #{eventinfo.sensor} has had a reading reset to #{eventinfo.newReading} and a new delta calculated of #{eventinfo.newDelta}"
   console.log data
-  fs.appendFileSync logfile, data if logfile?
+  fs.appendFileSync logfile, data+"\n\r" if logfile?
 
 #we got a spike and could not recover as gracefully as we wanted, so data may be a little off - we will still report as if we started up again with a base reading.
 envir.on 'impulse-warning', (eventinfo) ->
   data = "#{(new Date()).toLocaleTimeString()} Sensor #{eventinfo.sensor} has had a reading reset to last valid reading of #{eventinfo.newReading} due to spike with no correction data applied"
   console.log data
-  fs.appendFileSync logfile, data if logfile?
+  fs.appendFileSync logfile, data+"\n\r" if logfile?
 
 
     

@@ -1,5 +1,5 @@
 ###
-v0.9.0
+v0.9.3beta
 Copyright 2013, Andy Spencer < lightbulb a-t laughlinez {dot} com >
 ###
 
@@ -22,8 +22,10 @@ Copyright 2013, Andy Spencer < lightbulb a-t laughlinez {dot} com >
 
 ###
     CHANGELOG
-    2013-05-30 initial upload to github @0.9.0
-    2013-06-05 added impulse spike behaviour and coping policy @0.9.1
+    2013-05-30 0.9.0beta - initial upload to github @0.9.0
+    2013-06-05 0.9.1beta - added impulse spike behaviour and coping policy @0.9.1
+    2013-06-06 0.9.2beta - corrections
+    2013-06-08 0.9.3beta - impulse-reading correction, refactored to fully evaluate msg before emitting events - this seperated history tag leakage.
 ###
 
 
@@ -59,6 +61,8 @@ class CurrentCost128XMLBaseStation extends EventEmitter
   serialport : null
   reader     : null
   parser     : null
+
+  ver : "0.9.3-beta"
 
   #the state data
   #some shortcuts for closing-out and reporting events are made instead
@@ -109,7 +113,7 @@ class CurrentCost128XMLBaseStation extends EventEmitter
     @spikeThreshold ?= 0   #the number of Impulses in a single event to treat as a 'spike' and flatten with an 'average'
     @reading ?= {} #hash of readings e.g. {'9':1000 #optismart on meter, '5':2300 #solar pv}
     @debug ?= false
-    #@logfile = "cc.xml"
+    @logfile = "cc.xml"
 
     if @debug
       console.log "debug #{@debug}" 
@@ -136,25 +140,21 @@ class CurrentCost128XMLBaseStation extends EventEmitter
     @parser.ontext =  (t) ->
       # got some text.  t is the string of text.
       _s = self._s
+
       if _s.inSENSOR
         _s.sensor = t
-        _s.inSENSOR = false
 
       if _s.inID
         _s.id = t
-        _s.inID = false
 
       if _s.inDSB
         _s.dsb = t
-        _s.inDSB = false
 
       if _s.inSRC
         _s.src = t 
-        _s.inSRC = false
 
       if _s.inTMPR
         _s.temp = parseFloat(t)
-        _s.inTMPR = false
 
       if _s.inTIME
         hms = t.split ':'
@@ -163,19 +163,15 @@ class CurrentCost128XMLBaseStation extends EventEmitter
           _s.time.setHours( hms[0] )
           _s.time.setMinutes( hms[1] )
           _s.time.setSeconds( hms[2] )
-        _s.inTIME = false
 
       if _s.inSENSORTYPE  #1=sensor-watts, 2=electricity-imp data 3=gas-imp data 4=water-imp data
         _s.sensortype = t 
-        _s.inSENSORTYPE = false
 
       if _s.inIMP
         _s.imp = parseFloat(t)
-        _s.inIMP = false
 
       if _s.inIPU
         _s.ipu = parseFloat(t)
-        _s.inIPU = false
 
       if _s.inWATTS
         _s.watts = parseFloat(t)
@@ -198,10 +194,13 @@ class CurrentCost128XMLBaseStation extends EventEmitter
 
         if node.name == 'dsb'
           _s.inDSB = true
+
         if node.name == 'src'
           _s.inSRC = true
+
         if node.name == 'id'
           _s.inID = true
+
         if node.name == 'sensor'
           _s.inSENSOR = true
 
@@ -236,18 +235,57 @@ class CurrentCost128XMLBaseStation extends EventEmitter
       _s = self._s
 
       if tagName == 'msg'
+
+        if not _s.inHist #only emit these events if not in history
+          if self.emitbase
+            self.emit "base", {time: _s.time, src: _s.src, dsb: _s.dsb, temp: _s.temp}
+            if self.emitBaseEvery != 0 #only re-emit if asked       
+              self.emitbase = false
+              setTimeout ( -> self.emitbase = true ), 1000*self.emitBaseEvery
+
+
+          if _s.sensortype == "1" #we are a normal sensor
+            self.emit "sensor",  {time: _s.time, sensor: _s.sensor, id: _s.id, channel: _s.channel, watts: _s.watts}
+
+          if _s.sensortype == "2" #we are an impulse type
+            self.processImpulse()  
+
+
         _s.inMSG = false
         _s.inREALTIME = false
+        _s.inHIST = false
 
-        if self.emitbase
-          self.emit "base", {time: _s.time, src: _s.src, dsb: _s.dsb, temp: _s.temp}
-          if self.emitBaseEvery != 0 #only re-emit if asked       
-            self.emitbase = false
-            setTimeout ( -> self.emitbase = true ), 1000*self.emitBaseEvery
+
+      if tagName == 'sensor'
+        _s.inSENSOR = false
+
+      if tagName == 'id'
+        _s.inID = false
+
+      if tagName == 'dsb'
+        _s.inDSB = false
+
+      if tagName == 'tmpr'
+        _s.inTMPR = false
+
+      if tagName == 'time'
+        _s.inTIME = false
+
+      if tagName == 'src'
+        _s.inSRC = false
+
+      if tagName == 'type'
+        _s.inSENSORTYPE = false
+
+      if tagName == 'imp'
+        _s.inIMP = false
+
+      if tagName == 'ipu'
+        _s.inIPU = false
+
   
       if tagName == 'hist'
-        _s.inHIST = false
-        _s.inREALTIME = true
+        #we only close of history on /msg
         console.log ">>OUT HIST" if self.debug
 
       if tagName == 'watts'
@@ -255,120 +293,6 @@ class CurrentCost128XMLBaseStation extends EventEmitter
 
       if tagName.indexOf('ch') == 0
         _s.inCH = false
-        self.emit "sensor",  {time: _s.time, sensor: _s.sensor, id: _s.id, channel: _s.channel, watts: _s.watts}
-
-      if (tagName == 'ipu')
-
-        if _s.inREALTIME     #pseudo-realtime events
-
-
-          self.emit "impulse", {time: _s.time, sensor: _s.sensor, id: _s.id, type: _s.sensortype, value: _s.imp , ipu: _s.ipu}
-
-          curNow = Date.now()
-
-       
-          unless _s.impStart[_s.sensor]?  #first time init - so we skip initial event as itmakes no sense to emit it.
-            console.log "First time sensor seeding for sensor: #{_s.sensor}" if self.debug
-            _s.impStart[_s.sensor] = _s.imp
-            _s.impStartTime[_s.sensor] = curNow
-            _s.impTime[_s.sensor] = curNow
-            _s.impLast[_s.sensor] = 0
-            self.reading[_s.sensor] ?= 0
-            _s.readingBAK[_s.sensor] = self.reading[_s.sensor] #backup reading
-            _s.impAvg[_s.sensor] = [] #new avg array
-            console.log "End First time sensor seeding for sensor: #{_s.sensor}" if self.debug
-          else
-
-            #delta of impulse
-            curDelta = (_s.imp - _s.impLast[_s.sensor] )
-            avgSecs = ((curNow - _s.impTime[_s.sensor] )/1000)
-
-            consumed = _s.imp - _s.impStart[_s.sensor] #impulses since we started collecting on this instance
-            console.log "consumed:" , consumed, _s.imp, _s.impStart[_s.sensor], " reading:", self.reading[_s.sensor] if self.debug
-            #detect and flatten spikes
-            doSpike = false
-            if (self.spikeThreshold != 0) and (curDelta > self.spikeThreshold) 
-  
-              self.emit "impulse-spike", {time: _s.time, sensor: _s.sensor, id: _s.id, type: _s.sensortype, spike: curDelta }
-              console.log "impulse-spike  #{(new Date()).toLocaleTimeString()} prev: #{_s.impLast[_s.sensor]} curr: #{_s.imp} delta: #{curDelta}, tot-consumed: #{consumed}" if self.debug
-              #we have a spike but do we have enough data to smooth
-              if (_s.impAvg[_s.sensor].length >= 1) #even average of 1 is better than nothing!!
-                doSpike = true
-                tot = _s.impAvg[_s.sensor].reduce (t, s) -> 
-                  console.log "avg data: #{t} #{s}"
-                  t+s
-				
-                avg = tot / _s.impAvg[_s.sensor].length
-
-
-              if doSpike #take care of spike by using avg
-                _s.impStart[_s.sensor] = _s.imp - avg #reset
-                _s.impLast[_s.sensor] = _s.imp - avg  #reset
-                curDelta = avg
-                #recalc consumed
-                consumed = avg
-                oldRead = self.reading[_s.sensor]
-                self.reading[_s.sensor] = _s.readingBAK[_s.sensor] #restore prev backup
-                _s.impStartTime[_s.sensor] = curNow #reset
-
-                console.log "reading reset to: #{self.reading[_s.sensor]} from #{oldRead} using average of: #{avg}" if self.debug
-                self.emit "impulse-correction", {time: _s.time, sensor: _s.sensor, id: _s.id, type: _s.sensortype,  oldReading: oldRead, newReading: self.reading[_s.sensor], newDelta: curDelta}
-              else #we could not flatten spike so we dont generate messages
-                _s.impStart[_s.sensor] = _s.imp  # this removes spike but ditches current read data
-                _s.impLast[_s.sensor] = _s.imp   # this removes spike "
-                _s.impTime[_s.sensor] = curNow        #reset
-                _s.impStartTime[_s.sensor] = curNow   #reset
-                self.reading[_s.sensor] = _s.readingBAK[_s.sensor] #we really need some avg adding here as we have 'lost' a reading cycle.
-                self.emit "impulse-warning", {time: _s.time, sensor: _s.sensor, id: _s.id, type: _s.sensortype,  newReading: self.reading[_s.sensor]}
-                console.log "skipping spiked events - no avg collected" if self.debug
-                return #no events generated!!!
-               
-
-            else #no spike detected, take backup
-              _s.readingBAK[_s.sensor] = self.reading[_s.sensor] + (consumed / _s.ipu)
-
-
-
-             
-            #what the meter dial typically shows if 'reading' has been set, otherwise we start from '0', however its decimalised so if your .dials are not 0-9 it will be a decimal representation            
-            
-            self.emit "impulse-reading", {time: _s.time, sensor: _s.sensor, id: _s.id, type: _s.sensortype, reading: self.reading[_s.sensor] +  (consumed/_s.ipu), timeFrom: _s.impStartTime[_s.sensor] }
-
-            #keep tracking for average
-            if _s.impAvg[_s.sensor].length == 3
-              _s.impAvg[_s.sensor].pop()
-
-            _s.impAvg[_s.sensor].push(curDelta)
-
-            #only used for debug
-            if self.debug
-              tot = _s.impAvg[_s.sensor].reduce (t, s) -> 
-                 console.log "avg data: #{t} #{s}"
-                 t+s
-
-              console.log "avgArraylen:#{_s.impAvg[_s.sensor].length} total:#{tot}" if self.debug
-
-          
-            impPerInterval = (curDelta/avgSecs)*60*60  #pulses per hour at current rate 
-
-            self.emit "impulse-delta", {time: _s.time, sensor: _s.sensor, id: _s.id, type: _s.sensortype, delta: curDelta }
-
-            #impulses per hour divide ipu = kwH / 1000 = watts
-            self.emit "impulse-avg", {time: _s.time, sensor: _s.sensor, id: _s.id, type: _s.sensortype, avg: Math.floor( (impPerInterval/_s.ipu)*1000  ) }
-
-            #if doSpike
-              #console.log "Post spike calc terminate"
-              #process.exit 1
-
-
-          #always reset this data in loop
-          _s.impLast[_s.sensor] = _s.imp
-          _s.impTime[_s.sensor] = curNow
-
-#TODO: support history
-#        if _s.inHIST
-#          #we do some history stuff
-#          #but we'll do this later as I dont need it currently          
 
 
     @parser.onattribute = (attr) ->
@@ -402,6 +326,135 @@ class CurrentCost128XMLBaseStation extends EventEmitter
         self.reader.push data.toString()
         if self.logfile? #if we are logging we make sure its written with sync
           fs.appendFileSync self.logfile, data.toString()            #do nothing stub
+
+
+  processImpulse : () ->
+
+        self = this
+        _s = self._s
+
+        #console.log "processImplulse a", _s
+
+        if _s.inREALTIME     #pseudo-realtime events
+
+
+          self.emit "impulse", {time: _s.time, sensor: _s.sensor, id: _s.id, type: _s.sensortype, value: _s.imp , ipu: _s.ipu}
+
+          curNow = Date.now()
+
+       
+          unless _s.impStart[_s.sensor]?  #first time init - so we skip initial event as itmakes no sense to emit it.
+            console.log "First time sensor seeding for sensor: #{_s.sensor}" if self.debug
+            _s.impStart[_s.sensor] = _s.imp
+            _s.impStartTime[_s.sensor] = curNow
+            _s.impTime[_s.sensor] = curNow
+            _s.impLast[_s.sensor] = 0
+            self.reading[_s.sensor] ?= 0
+            _s.readingBAK[_s.sensor] = self.reading[_s.sensor] #backup reading
+            _s.impAvg[_s.sensor] = [] #new avg array
+            console.log "End First time sensor seeding for sensor: #{_s.sensor}" if self.debug
+          else
+
+            #delta of impulse
+            curDelta = (_s.imp - _s.impLast[_s.sensor] )
+            avgSecs = ((curNow - _s.impTime[_s.sensor] )/1000)
+
+            consumed = _s.imp - _s.impStart[_s.sensor] #impulses since we started collecting on this instance
+            console.log "consumed: #{consumed} impulses  since imp-start: #{_s.impStart[_s.sensor]}, imp-now: #{_s.imp} pre-reading: #{self.reading[_s.sensor]}" if self.debug
+            #detect and flatten spikes
+            doSpike = false
+            if (self.spikeThreshold != 0) and (curDelta > self.spikeThreshold) 
+  
+              self.emit "impulse-spike", {time: _s.time, sensor: _s.sensor, id: _s.id, type: _s.sensortype, spike: curDelta }
+              console.log "impulse-spike  #{(new Date()).toLocaleTimeString()} prev: #{_s.impLast[_s.sensor]} curr: #{_s.imp} delta: #{curDelta}, tot-consumed: #{consumed}" if self.debug
+              #we have a spike but do we have enough data to smooth
+              if (_s.impAvg[_s.sensor].length >= 1) #even average of 1 is better than nothing!!
+                doSpike = true
+                tot = _s.impAvg[_s.sensor].reduce (t, s) -> 
+                  #console.log "avg data: #{t} #{s}"
+                  t+s
+				
+                avg = tot / _s.impAvg[_s.sensor].length
+
+
+              if doSpike #take care of spike by using avg
+                _s.impStart[_s.sensor] = _s.imp - avg #reset
+                _s.impLast[_s.sensor] = _s.imp - avg  #reset
+                curDelta = avg
+                #recalc consumed
+                consumed = avg
+                oldRead = self.reading[_s.sensor]
+                self.reading[_s.sensor] = _s.readingBAK[_s.sensor] #restore prev backup
+                _s.impStartTime[_s.sensor] = curNow #reset
+
+                console.log "reading reset to: #{self.reading[_s.sensor]} from #{oldRead} using average of: #{avg}" if self.debug
+                self.emit "impulse-correction", {time: _s.time, sensor: _s.sensor, id: _s.id, type: _s.sensortype,  oldReading: oldRead, newReading: self.reading[_s.sensor], newDelta: curDelta}
+              else #we could not flatten spike so we dont generate messages
+                _s.impStart[_s.sensor] = _s.imp  # this removes spike but ditches current read data
+                _s.impLast[_s.sensor] = _s.imp   # this removes spike "
+                _s.impTime[_s.sensor] = curNow        #reset
+                _s.impStartTime[_s.sensor] = curNow   #reset
+                self.reading[_s.sensor] = _s.readingBAK[_s.sensor] #we really need some avg adding here as we have 'lost' a reading cycle.
+                self.emit "impulse-warning", {time: _s.time, sensor: _s.sensor, id: _s.id, type: _s.sensortype,  newReading: self.reading[_s.sensor]}
+                console.log "skipping spiked events - no avg collected" if self.debug
+                return #no events generated!!!
+               
+
+            else #no spike detected, take backup
+              _s.readingBAK[_s.sensor] = self.reading[_s.sensor] + (consumed / _s.ipu)
+
+             
+            #what the meter dial typically shows if 'reading' has been set, otherwise we start from '0', however its decimalised so if your .dials are not 0-9 it will be a decimal representation            
+
+            unless isFinite (curDelta/_s.ipu)  
+              console.log "Infinity: #{curDelta} #{_s.ipu}" if self.debug 
+              throw new Error "Infinity Assertion"
+
+            readinc = (curDelta/_s.ipu)
+            console.log "Incrementing reading by #{readinc}" if self.debug
+
+            self.emit "impulse-reading", {time: _s.time, sensor: _s.sensor, id: _s.id, type: _s.sensortype, reading: self.reading[_s.sensor] + readinc , timeFrom: _s.impStartTime[_s.sensor] }
+
+            #keep tracking for average
+            if _s.impAvg[_s.sensor].length == 3
+              _s.impAvg[_s.sensor].pop()
+
+            _s.impAvg[_s.sensor].push(curDelta)
+
+            #only used for debug
+            if self.debug
+              tot = _s.impAvg[_s.sensor].reduce (t, s) -> 
+                 #console.log "avg data: #{t} #{s}"
+                 t+s
+
+              console.log "avgArraylen:#{_s.impAvg[_s.sensor].length} total:#{tot}" if self.debug
+
+          
+            impPerInterval = (curDelta/avgSecs)*60*60  #pulses per hour at current rate 
+
+            self.emit "impulse-delta", {time: _s.time, sensor: _s.sensor, id: _s.id, type: _s.sensortype, delta: curDelta }
+
+            #impulses per hour divide ipu = kwH / 1000 = watts
+            self.emit "impulse-avg", {time: _s.time, sensor: _s.sensor, id: _s.id, type: _s.sensortype, avg: Math.floor( (impPerInterval/_s.ipu)*1000  ) }
+
+            #if doSpike
+              #console.log "Post spike calc terminate"
+              #process.exit 1
+
+
+          #always reset this data in loop
+          _s.impLast[_s.sensor] = _s.imp
+          _s.impTime[_s.sensor] = curNow
+
+#TODO: support history
+#        if _s.inHIST
+#          #we do some history stuff
+#          #but we'll do this later as I dont need it currently          
+
+
+  version : () ->
+    return @ver
+
 
   close : () ->
     @serialPort.close()
