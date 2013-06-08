@@ -1,5 +1,5 @@
 { "name":           "ccxmleventemitter",
-  "version":        "0.9.3beta",
+  "version":        "0.9.4beta",
   "description":    "CurrentCost Base Station XML NodeJS EventEmitter",
   "homepage":       "https://github.com/TheDistractor/CCXMLEventEmitter",
   "author":         "Andy Spencer <lightbulb@laughlinez.com>",
