@@ -236,7 +236,11 @@ class CurrentCost128XMLBaseStation extends EventEmitter
 
       if tagName == 'msg'
 
-        if not _s.inHist #only emit these events if not in history
+
+        #if _s.inHIST
+        #  console.log "We ignore events in History sections..."
+
+        unless _s.inHIST #only emit these events if not in history
           if self.emitbase
             self.emit "base", {time: _s.time, src: _s.src, dsb: _s.dsb, temp: _s.temp}
             if self.emitBaseEvery != 0 #only re-emit if asked       
