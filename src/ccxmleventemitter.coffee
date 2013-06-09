@@ -171,7 +171,9 @@ class CurrentCost128XMLBaseStation extends EventEmitter
         _s.imp = parseFloat(t)
 
       if _s.inIPU
-        _s.ipu = parseFloat(t)
+        val = parseFloat(t)
+        if val > 0
+           _s.ipu = val
 
       if _s.inWATTS
         _s.watts = parseFloat(t)
@@ -327,9 +329,10 @@ class CurrentCost128XMLBaseStation extends EventEmitter
       console.log 'open' if self.debug
 
       @on 'data' , (data) ->
-        self.reader.push data.toString()
         if self.logfile? #if we are logging we make sure its written with sync
           fs.appendFileSync self.logfile, data.toString()            #do nothing stub
+
+        self.reader.push data.toString()
 
 
   processImpulse : () ->
@@ -412,6 +415,7 @@ class CurrentCost128XMLBaseStation extends EventEmitter
 
             unless isFinite (curDelta/_s.ipu)  
               console.log "Infinity: #{curDelta} #{_s.ipu}" if self.debug 
+              console.log "State: #{JSON.stringify(_s)}"
               throw new Error "Infinity Assertion"
 
             readinc = (curDelta/_s.ipu)
