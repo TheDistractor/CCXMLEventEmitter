@@ -1,7 +1,7 @@
 #CCXMLEventEmitter
 =================
 
-###Changelog
+###Changelog ([Issue List](https://github.com/TheDistractor/CCXMLEventEmitter/issues))
 
 2013-06-08 for 0.9.3beta - corrected 'impulse-reading'. Added new impulse-spike, impulse-correction, impulse-warning events. updated package.json version deps.
 
@@ -69,7 +69,7 @@ parameters: baseinfo
 
 
 ###sensor###
-This is emitted every time a normal sensor reading is generated, sensors are 0-9 with 0 being while house 
+This is emitted every time a normal sensor reading is generated, sensors are 0-9 with 0 normally being 'Whole house' 
 and 9 normally being a 'data' channel. If a 'data' channel is detected, it is actually generated as a set of
 'impulse' events as they carry additional information, in which case a 'sensor' event will NOT be generated. 
 
@@ -98,12 +98,14 @@ be more accurate than those reported by 'sensor' events for overall consumption 
 parameters: impulseavginfo
 
 ###impulse-spike###
-Soetimes your impulse sensor (optismart etc) can produce 'false' impulses that I like to call 'spikes', this maybe due to
-other IR interference, an sensor movement due to environmental conditions, bright glare from sun etc etc.
+Sometimes your impulse sensor (optismart etc) can produce 'false' impulses that I like to call 'spikes', this maybe due to
+other IR interference, sensor movement due to environmental conditions, bright glare from sun etc etc.
 You can now use the option: spikeThreshold = ipu to setup 'spike' detection.
 e.g spikeThreshold = 60 would set anything above 60 ipu's per detection period to be treated as a spike, in which case a simple
 averaging algorithm is used to 'flatten' out the spike reading. A 'flattening' condition is known as a 'correction', in which case
 a further 'impulse-correction' event will be generated - see below.
+By default, spikes are NOT detected/reported/flattened (equivalent to spikeThreshold = 0).
+
 
 parameters: impulsespikeinfo
 
@@ -118,6 +120,8 @@ Occurs when a 'flattening' condition could not be made.
 parameters: impulsewarninginfo
 
 
+##WIKI
+[module wiki](https://github.com/TheDistractor/CCXMLEventEmitter/wiki)
 
 
 ##Additional implementations##
