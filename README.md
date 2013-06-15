@@ -1,6 +1,9 @@
 #CCXMLEventEmitter
 =================
 
+###Latest News
+[Can be found here] (https://github.com/TheDistractor/CCXMLEventEmitter/wiki/latestnews)
+
 ###Changelog ([Issue List](https://github.com/TheDistractor/CCXMLEventEmitter/issues))
 
 2013-06-08 for 0.9.3beta - corrected 'impulse-reading'. Added new impulse-spike, impulse-correction, impulse-warning events. updated package.json version deps.
