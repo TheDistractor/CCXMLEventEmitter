@@ -18,7 +18,13 @@ connected to linux usb serial port /dev/ttyUSB0
 #we will initialise sensor '9' with a reading of 1000.000 (this could represent the reading on a meter dial)
 #we setup a spikeThreshold of 60 ipu's. If and imp sensor reports above this value we treat as spike and the module tries to flatten the reading and carry on recording
 
-envir = new ccSvc.CurrentCost128XMLBaseStation '/dev/ttyUSB1', {useOSTime : true, debug: true, emitBaseEvery: 30, reading : {'9':1000.000}, spikeThreshold:60 }
+#device = '/dev/ttyUSB1'
+device = 'file:/home/pi/git/my/currentcost/CCEE2REDISPUB/cc.xml'
+#device = 'file:inputs/cc.xml'
+myvdate = new Date( "June 10, 2013" ) #2013, 05, 10 
+envir = new ccSvc.CurrentCost128XMLBaseStation device, {useOSTime : false, debug: true, emitBaseEvery: 30, reading : {'9':1000.000}, spikeThreshold:60000 , vdate: myvdate}
+
+CRLF = "\r\n"
 
 console.log "envir version #{envir.version()}"
 
@@ -46,27 +52,37 @@ envir.on 'impulse-delta' , (eventinfo) ->
 
 #basic attempt to report the average usage 
 envir.on 'impulse-avg' , (eventinfo) ->
-  console.log "Sensor #{eventinfo.sensor} reports an average consumption of #{eventinfo.avg} units since last reported event"
+  console.log "Sensor #{eventinfo.sensor} reports an average consumption of #{eventinfo.avg} units @ #{eventinfo.time} since last reported event"
 
 #we dont like spikes - but this tries to tell us we have had one.
 envir.on 'impulse-spike', (eventinfo) ->
   data = "#{(new Date()).toLocaleTimeString()} Sensor #{eventinfo.sensor} Spiked with pulses of #{eventinfo.spike} units since last reported event"
   console.log data
-  fs.appendFileSync logfile, data+"\n\r" if logfile?
+  fs.appendFileSync logfile, data+CRLF if logfile?
 
 #this tells us we have tried to apply a spike correction - readings should continue 'almost' normally.  
 envir.on 'impulse-correction', (eventinfo) ->
   data = "#{(new Date()).toLocaleTimeString()} Sensor #{eventinfo.sensor} has had a reading reset to #{eventinfo.newReading} and a new delta calculated of #{eventinfo.newDelta}"
   console.log data
-  fs.appendFileSync logfile, data+"\n\r" if logfile?
+  fs.appendFileSync logfile, data+CRLF if logfile?
+  #process.exit 1
+  #sound the bell
+  #console.log '\u0007'
+  #console.log '===================================='
 
 #we got a spike and could not recover as gracefully as we wanted, so data may be a little off - we will still report as if we started up again with a base reading.
 envir.on 'impulse-warning', (eventinfo) ->
   data = "#{(new Date()).toLocaleTimeString()} Sensor #{eventinfo.sensor} has had a reading reset to last valid reading of #{eventinfo.newReading} due to spike with no correction data applied"
   console.log data
-  fs.appendFileSync logfile, data+"\n\r" if logfile?
+  fs.appendFileSync logfile, data+CRLF if logfile?
 
-
+envir.on 'average', (averageinfo) ->
+  data = "sensor: #{averageinfo.sensor} channel: #{averageinfo.channel} type: #{averageinfo.type} period:#{averageinfo.period} value:#{averageinfo.value}"
+  console.log data
+  fs.appendFileSync "averages.txt", data+CRLF if true
+  
+  
+  
     
 process.on 'SIGINT', () ->
   console.log  "\ngracefully shutting down from  SIGINT (Crtl-C)" 
