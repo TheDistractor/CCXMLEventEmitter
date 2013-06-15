@@ -179,7 +179,10 @@ class CurrentCost128XMLBaseStation extends EventEmitter
     #@logfile ?= null #this now set only if debug and logfile is undefined 
     @vdate ?= null  #our virtual date/time for filesystem based events
     @emitAverages ?= true #do we emit cummulative average data.
-      
+    
+    #we need to 'clone' the 'readings' as we use it internally and we dont want to change it (or have it changes) outside
+    @reading = JSON.parse(JSON.stringify(@reading)) #simple clone
+    
     if @debug and (@logfile == undefined) #use unixtime (seconds since 1/1/1970) to generate incremental file.
       @logfile = "cc-#{((new Date()).getTime()/1000).toFixed()}.xml" #logfile default if debug and not a parameter. To override in debug, use logile: null parameter
     
@@ -727,7 +730,9 @@ class CurrentCost128XMLBaseStation extends EventEmitter
 			   
 
             else #no spike detected, take backup
+              
               readinc = (consumed / _s.ipu) #total since reading last reset or startup
+              console.log "====== reading #{self.reading[_s.sensor]} consumed #{consumed} inc #{readinc}" if self.debug 
               _s.readingBAK[_s.sensor] = self.reading[_s.sensor] + readinc #and back this data up
 
              
