@@ -681,7 +681,7 @@ class CurrentCost128XMLBaseStation extends EventEmitter
   
               self.emit "impulse-spike", {time: _s.time, sensor: _s.sensor, channel: _s.channel, id: _s.id, type: _s.sensortype, spike: curDelta }
               data = "impulse-spike  #{_s.time.toLocaleTimeString()} prev: #{_s.impLast[_s.sensor]} curr: #{_s.imp} delta: #{curDelta}, tot-consumed: #{consumed}" if self.debug
-              console.log data
+              #console.log data
               fs.appendFileSync debugfile, data + "\r\n"  if (self.debug > 1)         #temp debug
 
 
@@ -740,7 +740,7 @@ class CurrentCost128XMLBaseStation extends EventEmitter
 
             unless isFinite (curDelta/_s.ipu)  
               console.log "Infinity: #{curDelta} #{_s.ipu}" if self.debug 
-              console.log "State: #{JSON.stringify(_s)}"
+              console.log "State: #{JSON.stringify(_s)}" if self.debug
               throw new Error "Infinity Assertion"
 
             if doSpike #we calculate the incremental gain from just this event as normal impluses cummulate against a base reading  

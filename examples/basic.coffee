@@ -16,7 +16,7 @@ connected to linux usb serial port /dev/ttyUSB0
 #we will use the OS time for events instead of the base stations time
 #we will report base messages every 30 secs (these contain temp etc)
 #we will initialise sensor '9' with a reading of 1000.000 (this could represent the reading on a meter dial)
-#we setup a spikeThreshold of 60 ipu's. If and imp sensor reports above this value we treat as spike and the module tries to flatten the reading and carry on recording
+#we setup a spikeThreshold of 60 ipu's. If an imp sensor reports above this value we treat as spike and the module tries to flatten the reading and carry on recording
 
 envir = new ccSvc.CurrentCost128XMLBaseStation '/dev/ttyUSB0', {useOSTime : true, debug: false, emitBaseEvery: 30, reading : {'9':1000.000}, spikeThreshold:60 }
 
@@ -65,6 +65,10 @@ envir.on 'impulse-warning', (eventinfo) ->
   console.log data
   fs.appendFileSync logfile, data if logfile?
 
+envir.on 'average', (averageinfo) ->
+  data = "sensor: #{averageinfo.sensor} channel: #{averageinfo.channel} type: #{averageinfo.type} period:#{averageinfo.period} value:#{averageinfo.value}"
+  console.log data
+  fs.appendFileSync logfile, data if logfile?
 
     
 process.on 'SIGINT', () ->
