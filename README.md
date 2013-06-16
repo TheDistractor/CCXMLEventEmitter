@@ -74,7 +74,7 @@ You can also use the module to process an existing xml source file
 
     options = {emitBaseEvery: 60} #default
 
-    envir = new ccSvc.CurrentCost128XMLBaseStation 'file:~/mycurrentcostdata.xml', options  #or whatever your usb device is.
+    envir = new ccSvc.CurrentCost128XMLBaseStation 'file:~/mycurrentcostdata.xml', options  #or whereever your file resides.
 
     #you can then listen to those events you want
     envir.on 'sensor', (eventinfo) ->
@@ -82,9 +82,11 @@ You can also use the module to process an existing xml source file
 
 
 *See the examples folder for more information*
+
 Information on {options} will be expanded shortly:
 
   * device         - default: undefined - path to serial port or a filesystem entry.
+    (e.g '/dev/ttyUSB0' or 'file:~/myccfile.xml' ) 
   * useOSTime      - default: false     - do we use the O/S time or emit the base stations 'string' time (which drifts)
   * emitBaseEvery  - default: 60        - how often to emit the base message (contains temperature, days-since-birth, firmware rev etc)
   * spikeThreshold - default: 0         - the number of Impulses in a single event to treat as a 'spike' and flatten with an 'average', 0 disables detection.
